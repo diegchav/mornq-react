@@ -13,6 +13,7 @@ const QuoteContainer = styled.div`
 
     .quote-text {
         font-size: 3rem;
+        text-align: center;
     }
 
     .quote-author {
