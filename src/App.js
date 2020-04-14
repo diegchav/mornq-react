@@ -3,6 +3,7 @@ import React from 'react'
 import Color from './models/color';
 
 import Quote from './components/quote/quote.component';
+import RandomButton from './components/random-button/random-button.component';
 
 import WithSpinner from './hoc/with-spinner';
 
@@ -27,22 +28,33 @@ class App extends React.Component {
   componentDidMount() {
     try {
         db.collection(FIRESTORE_QUOTES_COLLECTION).get().then(snapshot => {
-            let quotes = [];
+            const quotes = [];
             snapshot.forEach(doc => {
                 quotes.push(doc.data());
             });
-            let randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-            this.setState({
-                quotes,
-                quoteText: randomQuote.text,
-                quoteAuthor: randomQuote.author,
-                loading: false
-            });
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            this.setQuote({ quote: randomQuote, quotes: quotes, loading: false });
         });
     } catch (err) {
         console.error(err);
     }
-}
+  }
+
+  handleRandomQuoteClick = () => {
+    const { quotes } = this.state;
+    const randomBackground = Color.random();
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    this.setQuote({ quote: randomQuote, background: randomBackground });
+  };
+
+  setQuote = ({ quote, ...otherProps }) => {
+    const { text, author } = quote;
+    this.setState({
+      quoteText: text,
+      quoteAuthor: author,
+      ...otherProps
+    });
+  };
 
   render() {
     return (
@@ -52,6 +64,9 @@ class App extends React.Component {
           isLoading={this.state.loading}
           text={this.state.quoteText}
           author={this.state.quoteAuthor} />
+        <RandomButton
+          onClick={this.handleRandomQuoteClick}
+        />
       </AppContainer>
     );
   }
