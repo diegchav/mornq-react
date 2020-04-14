@@ -9,7 +9,10 @@ import WithSpinner from './hoc/with-spinner';
 
 import { db } from './firebase/firebase.utils';
 
-import { FIRESTORE_QUOTES_COLLECTION } from './constants';
+import {
+  LOCAL_STORAGE_KEY,
+  FIRESTORE_QUOTES_COLLECTION
+} from './constants';
 
 import AppContainer from './App.styles';
 import GlobalStyle from './global.styles';
@@ -26,17 +29,26 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    try {
+    let quotes = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+    if (quotes) {
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      this.setQuote({ quote: randomQuote, quotes: quotes, loading: false });
+    } else {
+      try {
         db.collection(FIRESTORE_QUOTES_COLLECTION).get().then(snapshot => {
-            const quotes = [];
+            quotes = [];
             snapshot.forEach(doc => {
                 quotes.push(doc.data());
             });
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             this.setQuote({ quote: randomQuote, quotes: quotes, loading: false });
+
+            // Save to local storage.
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(quotes));
         });
-    } catch (err) {
-        console.error(err);
+      } catch (err) {
+          console.error(err);
+      }
     }
   }
 
